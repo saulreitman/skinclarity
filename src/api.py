@@ -28,7 +28,7 @@ input_size_1 = 20
 hidden_size_1 = 64
 dataset_ingredients = pd.read_csv('./dataset/ingredientsList.csv')
 ingredients = {
-    row['name']: {'description': row['short_description'], 'what': row['what_is_it']}
+    row['name']: {'description': row['short_description'], 'avoid_if': row['who_should_avoid']}
     for _, row in dataset_ingredients.iterrows()
 }
 all_conditions = set()
@@ -46,7 +46,7 @@ model_1.eval()
 hidden_size_2 = 256
 dataset_products = pd.read_csv('./dataset/productsList.csv')
 products = {
-    row['name']: {'type': row['type'], 'afterUse': row['afterUse'], 'ingredients': row['ingredients']}
+    row['name']: {'type': row['type'], 'afterUse': row['afterUse'], 'ingredients': row['ingredients'], 'brand': row['brand']}
     for _, row in dataset_products.iterrows()
 }
 dataset_products['ingredients'] = dataset_products['ingredients'].str.replace(r'\s*\d+(\.\d+)?%', '', regex=True)
@@ -92,7 +92,7 @@ def recommend():
         {
             "name": ingredient_names[i],
             "short_description": ingredients[ingredient_names[i]]['description'],
-            "what": ingredients[ingredient_names[i]]['what']
+            "avoid_if": str([x for x in ast.literal_eval(ingredients[ingredient_names[i]]['avoid_if']) if x.strip()])
         }
         for i in range(len(good_ingredient_indices)) if good_ingredient_indices[i]
     ]
@@ -123,7 +123,8 @@ def recommend():
                     "name": product_name,
                     "type": product_info['type'],
                     "afterUse": product_info['afterUse'],
-                    "ingredients": product_info['ingredients']
+                    "ingredients": product_info['ingredients'],
+                    'brand': product_info['brand']
                 })
 
         # Limit to 10 products per ingredient
